@@ -7,13 +7,13 @@ It will wake up with a Pir sensor, Touch screen or crontab
 
 ## Screenshot
 
-![](https://raw.githubusercontent.com/thomo/MMM-Pir/dev/screenshot/screenshot.png)
+![](./screenshot/screenshot.png)
 
-![](https://raw.githubusercontent.com/thomo/MMM-Pir/dev/screenshot/screenshot2.png)
+![](./screenshot/screenshot2.png)
 
-![](https://raw.githubusercontent.com/thomo/MMM-Pir/dev/screenshot/screenshot3.png)
+![](./screenshot/screenshot3.png)
 
-![](https://raw.githubusercontent.com/thomo/MMM-Pir/dev/screenshot/screenshot4.png)
+![](./screenshot/screenshot4.png)
 
 
 ## Installation
