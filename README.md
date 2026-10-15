@@ -1,6 +1,9 @@
 # MMM-Pir
 
-## ⚠ The original user bugsounet deleted his MMM-Pir repository - this is just a copy. I cannot give support.
+> [!WARNING]
+> This repository is based on MMM-Pir by **bugsounet**, whose original repository has been deleted.
+> It has been updated to run on current MagicMirror² and Raspberry Pi OS versions, but **I do not provide any support** for it.
+> Use it as it is.
 
 After a configured time without any user interaction the display will turn off and hide all modules for economy mode.<br>
 It will wake up with a Pir sensor, Touch screen or crontab
@@ -15,6 +18,14 @@ It will wake up with a Pir sensor, Touch screen or crontab
 
 ![](./screenshot/screenshot4.png)
 
+## What's new in v3.0.0
+
+- Compatible with MagicMirror² v2.38.0 and Node.js 26
+- Runs on Debian 13 / Raspberry Pi OS "trixie" (libgpiod 2.x)
+- Pir `mode: 0` now uses the `gpiomon` tool from libgpiod (works with libgpiod 1.x and 2.x) and reacts instantly to the sensor
+- No native module to compile any more (`node-libgpiod` was removed)
+
+⚠ Breaking: MagicMirror² v2.38.0 and Node.js v22.22.2 or newer are now required.
 
 ## Installation
 
@@ -159,6 +170,13 @@ For some displays, the `getvcp` commands cause the display to turn-on. In these 
     - `mode: 1` - use python script with gpiozero library
 
  ⚠ You can disable PIR Sensor detection by using `gpio: 0`
+
+Tip for `mode: 0`: you can check your sensor without MagicMirror² (replace `21` with your pin, stop with `Ctrl+C`):
+```sh
+gpiomon --edges=rising --chip gpiochip0 21   # libgpiod 2.x (trixie)
+gpiomon --rising-edge gpiochip0 21           # libgpiod 1.x (bookworm)
+```
+Each detection prints a line. On a Raspberry Pi 5, the chip may be another one: `gpiodetect` lists them (MMM-Pir uses the one labelled `pinctrl-...`).
 
 ------
 #### Motion Configuration

@@ -1,6 +1,6 @@
 {
   "name": "MMM-Pir",
-  "version": "2.5.0",
+  "version": "3.0.0",
   "description": "Screen manager",
   "keywords": [
     "magic mirror",
@@ -8,13 +8,10 @@
     "screen",
     "motion detection"
   ],
-  "homepage": "https://github.com/bugsounet/MMM-Pir",
-  "bugs": {
-    "url": "https://www.bugsounet.fr/"
-  },
+  "homepage": "https://github.com/thomo/MMM-Pir",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bugsounet/MMM-Pir"
+    "url": "https://github.com/thomo/MMM-Pir"
   },
   "license": "MIT",
   "author": "bugsounet",
