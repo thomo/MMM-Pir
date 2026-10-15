@@ -1,6 +1,6 @@
 {
   "name": "MMM-Pir",
-  "version": "2.4.4",
+  "version": "2.5.0",
   "description": "Screen manager",
   "keywords": [
     "magic mirror",
@@ -18,6 +18,7 @@
   },
   "license": "MIT",
   "author": "bugsounet",
+  "type": "commonjs",
   "main": "MMM-Pir.js",
   "scripts": {
     "clean": "rm -rf node_modules package-lock.json",
@@ -40,26 +41,29 @@
     "update": "installer/update.sh"
   },
   "dependencies": {
-    "@electron/rebuild": "^3.7.1",
+    "@electron/rebuild": "^4.2.1",
     "cron-parser": "^4.9.0",
-    "esbuild": "^0.24.2",
+    "esbuild": "^0.28.2",
     "fdir": "^6.4.2",
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.1",
     "long-press-event": "^2.5.0",
-    "nan": "^2.22.0",
+    "nan": "^2.29.0",
     "node-cron": "^3.0.3",
     "node-libgpiod": "^0.4.6",
     "progressbar.js": "^1.1.1",
     "python-shell": "^5.0.0"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^2.12.1",
-    "eslint": "^9.17.0",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-package-json": "^0.19.0"
+    "@eslint/js": "^10.0.1",
+    "@eslint/json": "^2.1.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "eslint": "^10.12.0",
+    "eslint-plugin-import-x": "^4.17.1",
+    "eslint-plugin-package-json": "^1.10.1",
+    "globals": "^17.13.0"
   },
   "engines": {
-    "node": ">=20.9.0 <21 || >=22"
+    "node": ">=22.22.2 <23 || >=24"
   },
-  "rev": "250102"
+  "rev": "261015"
 }

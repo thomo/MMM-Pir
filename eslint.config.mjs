@@ -1,11 +1,11 @@
 import globals from "globals";
 import eslintPluginStylistic from "@stylistic/eslint-plugin";
-import eslintPluginImport from "eslint-plugin-import";
+import {flatConfigs as eslintPluginImportX} from "eslint-plugin-import-x";
 import eslintPluginJs from "@eslint/js";
-import eslintPluginPackageJson from "eslint-plugin-package-json/configs/recommended";
+import {configs as eslintPluginPackageJson} from "eslint-plugin-package-json";
 
 const config = [
-  eslintPluginImport.flatConfigs.recommended,
+  eslintPluginImportX.recommended,
   eslintPluginJs.configs.recommended,
   {
     "files": ["**/*.js"],
@@ -20,15 +20,14 @@ const config = [
         "Module": true,
         "moment": true,
         "document": true,
-        "windows": true,
-        "configMerge": true
+        "windows": true
       }
     },
     "plugins": {
-      ...eslintPluginStylistic.configs["all-flat"].plugins
+      ...eslintPluginStylistic.configs.all.plugins
     },
     "rules": {
-      ...eslintPluginStylistic.configs["all-flat"].rules,
+      ...eslintPluginStylistic.configs.all.rules,
       "@stylistic/array-element-newline": ["error", "consistent"],
       "@stylistic/arrow-parens": ["error", "always"],
       "@stylistic/brace-style": "off",
@@ -55,15 +54,15 @@ const config = [
       "@stylistic/spaced-comment": "off",
       "eqeqeq": "error",
       "id-length": "off",
-      "import/order": "error",
-      "import/extensions": [
+      "import-x/order": "error",
+      "import-x/extensions": [
         "error",
         {
           "json": "always" // ignore json require (display EXT version and rev date)
         }
       ],
-      "import/newline-after-import": "error",
-      "import/no-unresolved": "error",
+      "import-x/newline-after-import": "error",
+      "import-x/no-unresolved": "error",
       "init-declarations": "off",
       "max-lines-per-function": ["warn", 400],
       "max-statements": "off",
@@ -96,21 +95,25 @@ const config = [
       "sourceType": "module"
     },
     "plugins": {
-      ...eslintPluginStylistic.configs["all-flat"].plugins
+      ...eslintPluginStylistic.configs.all.plugins
     },
     "rules": {
-      ...eslintPluginStylistic.configs["all-flat"].rules,
+      ...eslintPluginStylistic.configs.all.rules,
       "@stylistic/indent": ["error", 2],
       "@stylistic/array-element-newline": "off",
       "@stylistic/function-call-argument-newline": "off",
-      "import/no-unresolved": "off"
+      "import-x/no-unresolved": "off"
     }
   },
   {
     "files": ["package.json"],
-    ...eslintPluginPackageJson,
+    ...eslintPluginPackageJson.recommended,
     "rules": {
-      ...eslintPluginPackageJson.rules,
+      ...eslintPluginPackageJson.recommended.rules,
+      // MagicMirror² module: not published to npm
+      "package-json/require-exports": "off",
+      "package-json/require-files": "off",
+      "package-json/require-sideEffects": "off",
       "package-json/valid-name": "off"
     }
   },

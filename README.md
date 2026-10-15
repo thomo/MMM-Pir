@@ -18,8 +18,8 @@ It will wake up with a Pir sensor, Touch screen or crontab
 
 ## Installation
 
-**Minimal MagicMirror² version requirement: v2.28.0** <br>
-**Minimal node version requirement: v20.9.0**
+**Minimal MagicMirror² version requirement: v2.38.0** <br>
+**Minimal node version requirement: v22.22.2 (v24 or newer recommended, tested with v26)**
 
 Clone the module into your MagicMirror module folder and execute `npm run setup` in the module's directory.
 ```sh
@@ -376,6 +376,17 @@ You can disable sound by using `0` in your configuration
   * `MMM_PIR-WAKEUP` notification to wake up the screen and reset count down.
   * `MMM_PIR-LOCK` notification keep the screen on and lock it (freeze counter and stop pir detection).
   * `MMM_PIR-UNLOCK` notification unlock the screen and restart counter and pir detection.
+
+### Development
+
+Sources live in `src/`. `npm run setup` minifies them into the module root (`MMM-Pir.js`, `node_helper.js`, `components/`).
+
+- `npm run dev`: copy `src/` to the module root without minifying (easier debugging)
+- `npm test`: run ESLint
+- `npm run test:minify`: check that all sources build with esbuild
+
+To try the module without a Raspberry Pi, run MagicMirror² in server mode (`node --run server`) and open `http://localhost:8080` in a browser.
+Use `Display.mode: 0`, `Pir.gpio: 0` and `Governor: { sleeping: 0, working: 0 }` so no hardware or `sudo` is needed.
 
 ## Update
 
