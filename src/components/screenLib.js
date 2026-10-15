@@ -325,27 +325,29 @@ class SCREEN {
         break;
       case 3:
         // wlr-randr
-        exec(`WAYLAND_DISPLAY=${this.screen.waylandDisplayName} wlr-randr | grep 'Enabled'`,
+        exec(`WAYLAND_DISPLAY=${this.screen.waylandDisplayName} wlr-randr`,
           (err, stdout) => {
             if (err) {
               console.error(`[MMM-Pir] [LIB] [SCREEN] wlr-randr: ${err}`);
               this.sendSocketNotification("SCREEN_ERROR", "wlr-randr command error (mode: 3)");
-            } else {
-              let responseSh = stdout.trim();
-              if (responseSh.split(" ")[1] === "yes") actual = true;
-              exec(`WAYLAND_DISPLAY=${this.screen.waylandDisplayName} wlr-randr`,
-                (err, stdout) => {
-                  if (err) {
-                    console.error(`[MMM-Pir] [LIB] [SCREEN] wlr-randr: ${err}`);
-                    this.sendSocketNotification("SCREEN_ERROR", "wlr-randr scan screen command error (mode: 3)");
-                  } else {
-                    let wResponse = stdout.trim();
-                    this.screen.hdmiPort = wResponse.split(" ")[0];
-                    log(`[MODE 3] Monitor on ${this.screen.hdmiPort} is ${actual}`);
-                    this.resultDisplay(actual, wanted);
-                  }
-                });
+              return;
             }
+            // each output starts with an unindented line: `HDMI-A-1 "..."`
+            // skip wlroots placeholders (NOOP-1, HEADLESS-1) created when no real output is enabled
+            const outputs = stdout.split(/\n(?=\S)/).map((block) => ({
+              name: block.split(" ")[0].trim(),
+              enabled: (/^\s*Enabled: yes/m).test(block)
+            })).filter((output) => output.name && !(/^(NOOP|HEADLESS)-/).test(output.name));
+            const output = outputs.find((o) => o.name === this.screen.hdmiPort) || outputs[0];
+            if (!output) {
+              console.error("[MMM-Pir] [LIB] [SCREEN] wlr-randr: no output found");
+              this.sendSocketNotification("SCREEN_ERROR", "wlr-randr no output found (mode: 3)");
+              return;
+            }
+            this.screen.hdmiPort = output.name;
+            actual = output.enabled;
+            log(`[MODE 3] Monitor on ${this.screen.hdmiPort} is ${actual}`);
+            this.resultDisplay(actual, wanted);
           });
         break;
       case 4:
