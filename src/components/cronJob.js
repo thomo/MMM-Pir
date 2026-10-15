@@ -1,6 +1,6 @@
 var log = () => { /* do nothing */ };
 var cron = require("node-cron");
-var parser = require("cron-parser");
+var { CronExpressionParser } = require("cron-parser");
 
 class cronJob {
   constructor (config, callback) {
@@ -88,31 +88,26 @@ class cronJob {
   }
 
   checkCron (toCron, type) {
-    var interval = parser.parseExpression("* * * * *");
-    var fields = JSON.parse(JSON.stringify(interval.fields));
     console.log(`[MMM-Pir] [LIB] [CRON] [${type}] Configure:`, toCron);
     if (isNaN(toCron.hour)) {
       this.error_unspecified(5);
       return console.error(`[MMM-Pir] [LIB] [CRON] ~Code 5~ [${type}]`, toCron, "hour must be a number");
     }
-    fields.hour = [toCron.hour];
     if (isNaN(toCron.minute)) {
       this.error_unspecified(6);
       return console.error(`[MMM-Pir] [LIB] [CRON] ~Code 6~ [${type}]`, toCron, "minute must be a number");
     }
-    fields.minute = [toCron.minute];
-    if (!Array.isArray(toCron.dayOfWeek)) {
+    if (!Array.isArray(toCron.dayOfWeek) || !toCron.dayOfWeek.length) {
       this.error_unspecified(7);
-      return console.error(`[MMM-Pir] [LIB] [CRON] ~Code 7~ [${type}]`, toCron, "dayOfWeek must be a Array");
+      return console.error(`[MMM-Pir] [LIB] [CRON] ~Code 7~ [${type}]`, toCron, "dayOfWeek must be a non-empty Array");
     }
-    fields.dayOfWeek = toCron.dayOfWeek;
     try {
-      var modifiedInterval = parser.fieldsToExpression(fields);
-      var job = modifiedInterval.stringify();
+      var interval = CronExpressionParser.parse(`${toCron.minute} ${toCron.hour} * * ${toCron.dayOfWeek.join(",")}`);
+      var job = interval.stringify();
       log(`[${type}] PASSED --->`, job);
       if (type === "ON") this.cronON.push(job);
       else this.cronOFF.push(job);
-      console.log(`[MMM-Pir] [LIB] [CRON] [${type}] Next`, type === "ON" ? "Start:" : "Stop:", modifiedInterval.next().toString());
+      console.log(`[MMM-Pir] [LIB] [CRON] [${type}] Next`, type === "ON" ? "Start:" : "Stop:", interval.next().toString());
     } catch (e) {
       this.error_unspecified(8);
       console.error(`[MMM-Pir] [LIB] [CRON] ~Code 8~ [${type}]`, toCron, e.toString());
