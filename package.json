@@ -40,13 +40,12 @@
     "reset": "rm -f *.js && rm -rf components/*.js && git reset --hard",
     "presetup": "npm run dependencies && installer/preinstall.sh",
     "setup": "npm prune",
-    "postsetup": "installer/postinstall.sh -m -r",
+    "postsetup": "installer/postinstall.sh -m",
     "test": "npm run lint",
     "test:minify": "cd installer && node minify.js",
     "update": "installer/update.sh"
   },
   "dependencies": {
-    "@electron/rebuild": "^4.2.1",
     "cron-parser": "^4.9.0",
     "esbuild": "^0.28.2",
     "fdir": "^6.4.2",
