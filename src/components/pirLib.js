@@ -1,6 +1,8 @@
 /** PIR library **/
 /** bugsounet **/
 
+const { execFile, spawn } = require("node:child_process");
+
 var log = () => { /* do nothing */ };
 
 class PIR {
@@ -17,9 +19,6 @@ class PIR {
     this.pir = null;
     this.running = false;
     this.pirChip = null;
-    this.pirLine = null;
-    this.pirChipNumber = -1;
-    this.pirInterval = null;
     this.pirReadyToDetect = false;
   }
 
@@ -28,7 +27,7 @@ class PIR {
     if (this.config.gpio === 0) return console.log("[MMM-Pir] [LIB] [PIR] Disabled.");
     switch (this.config.mode) {
       case 0:
-        console.log("[MMM-Pir] [LIB] [PIR] Mode 0 Selected (gpiod library)");
+        console.log("[MMM-Pir] [LIB] [PIR] Mode 0 Selected (gpiod tools)");
         this.gpiodDetect();
         break;
       case 1:
@@ -46,15 +45,7 @@ class PIR {
 
   stop () {
     if (!this.running) return;
-    if (this.config.mode === 0 && this.pirLine) {
-      clearInterval(this.pirInterval);
-      this.pirLine.release();
-      this.pirLine = null;
-    }
-
-    if (this.config.mode === 1) {
-      this.pir.kill();
-    }
+    this.pir?.kill();
 
     this.pir = null;
     this.running = false;
@@ -118,86 +109,71 @@ class PIR {
     });
   }
 
-  /* experimental */
+  /* use gpiomon from libgpiod tools (apt package `gpiod`): works with libgpiod 1.x and 2.x */
 
-  gpiodDetect () {
-    let libgpiod;
+  async gpiodDetect () {
     try {
-      // optional dependency: can't be built with libgpiod 2.x (Debian 13 "trixie" and newer)
-      libgpiod = require("node-libgpiod");
-    } catch {
-      const message = "node-libgpiod is not available (libgpiod 2.x?), please use Pir mode: 1 (gpiozero)";
-      console.error(`[MMM-Pir] [LIB] [PIR] [GPIOD] ${message}`);
-      this.running = false;
-      return this.callback("PIR_ERROR", message);
-    }
+      const version = await this.gpiodRun("gpiomon", ["--version"]);
+      const major = Number((/\(libgpiod\) v(\d+)\./).exec(version)?.[1]);
+      if (!major) throw new Error(`Unknown gpiomon version: ${version.split("\n")[0]}`);
+      log(`[GPIOD] gpiomon libgpiod v${major}`);
 
-    try {
-      const { Chip, Line } = libgpiod;
-      const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      // each line: "gpiochip0 [pinctrl-bcm2711] (58 lines)"
+      const chips = await this.gpiodRun("gpiodetect", []);
+      chips.split("\n").forEach((chip) => log(`[GPIOD] Check chip: ${chip}`));
+      const found = chips.split("\n").find((chip) => chip.includes("[pinctrl-"));
+      if (!found) throw new Error("No Chip Found!");
+      this.pirChip = found.split(" ")[0];
+      console.log(`[MMM-Pir] [LIB] [PIR] [GPIOD] Found chip: ${found}`);
 
-      numbers.every((number) => {
-        try {
-          this.pirChip = new Chip(number);
-          const label = this.pirChip.getChipLabel();
-          log(`[GPIOD] Check chip ${number}: ${label}`);
-          if (label.includes("pinctrl-")) {
-            // found chip
-            console.log(`[MMM-Pir] [LIB] [PIR] [GPIOD] Found chip ${number}: ${label}`);
-            this.pirChipNumber = number;
-            return false;
-          }
-        } catch {
-          // out of chip
-          return false;
-        }
-        // try next chip
-        return true;
-      });
-
-      if (this.pirChipNumber === -1) {
-        console.error("[MMM-Pir] [LIB] [PIR] [GPIOD] No Chip Found!");
-        this.running = false;
-        return this.callback("PIR_ERROR", "No Chip Found!");
-      }
-
-      this.pirLine = new Line(this.pirChip, this.config.gpio);
-      this.pirLine.requestInputMode();
-      this.callback("PIR_STARTED");
-      console.log("[MMM-Pir] [LIB] [PIR] Started!");
+      // print "1" on each rising edge
+      const args = major === 1
+        ? ["--line-buffered", "--rising-edge", "--format=%e", this.pirChip, String(this.config.gpio)]
+        : ["--edges=rising", "--format=%e", "--chip", this.pirChip, String(this.config.gpio)];
+      log(`[GPIOD] Run: gpiomon ${args.join(" ")}`);
+      this.pir = spawn("gpiomon", args);
     } catch (err) {
-      if (this.pirLine) {
-        this.pirLine.release();
-        this.pirLine = null;
-      }
-
-      console.error(`[MMM-Pir] [LIB] [PIR] [GPIOD] ${err}`);
+      console.error(`[MMM-Pir] [LIB] [PIR] [GPIOD] ${err.message}`);
       this.running = false;
       return this.callback("PIR_ERROR", err.message);
     }
 
-    this.running = true;
+    let stderr = "";
+    this.pir.stderr.on("data", (data) => { stderr += data; });
+    this.pir.stdout.on("data", (data) => {
+      data.toString().split("\n").forEach((line) => {
+        if (line.trim() !== "1") return;
+        log("Detected presence");
+        this.callback("PIR_DETECTED");
+      });
+    });
+    this.pir.on("error", (err) => {
+      console.error(`[MMM-Pir] [LIB] [PIR] [GPIOD] ${err.message}`);
+      this.running = false;
+      this.callback("PIR_ERROR", err.message);
+    });
+    this.pir.on("exit", (code, signal) => {
+      if (!this.running) return;
+      const message = stderr.trim() || `gpiomon exited (code: ${code}, signal: ${signal})`;
+      console.error(`[MMM-Pir] [LIB] [PIR] [GPIOD] ${message}`);
+      this.running = false;
+      this.pir = null;
+      this.callback("PIR_ERROR", message);
+    });
+    process.once("exit", () => this.pir?.kill());
 
-    this.pir = () => {
-      var line = this.pirLine;
-      if (this.running) {
-        try {
-          var value = line.getValue();
-          if (value !== this.oldstate) {
-            this.oldstate = value;
-            log(`Sensor read value: ${value}`);
-            if (value === 1) {
-              this.callback("PIR_DETECTED");
-              log("Detected presence");
-            }
-          }
-        } catch (err) {
-          console.error(`[MMM-Pir] [LIB] [PIR] [GPIOD] ${err}`);
-          this.callback("PIR_ERROR", err);
-        }
-      }
-    };
-    this.pirInterval = setInterval(() => this.pir(), 1000);
+    this.running = true;
+    this.callback("PIR_STARTED");
+    console.log("[MMM-Pir] [LIB] [PIR] Started!");
+  }
+
+  gpiodRun (command, args) {
+    return new Promise((resolve, reject) => {
+      execFile(command, args, (err, stdout, stderr) => {
+        if (err) reject(new Error(err.code === "ENOENT" ? `${command} not found, please install the gpiod package` : (stderr.trim() || err.message)));
+        else resolve(stdout.trim());
+      });
+    });
   }
 }
 
