@@ -130,7 +130,7 @@ To display the module insert it in the config.js file.
  | wrandrForceRotation | **-mode 3 only-** Forces screen rotation according to the defined value (possible value: "normal", "90", "180", "270", "flipped", "flipped-90", "flipped-180", "flipped-270") | String | normal |
  | wrandrForceMode | **-mode 3 only-** Force screen resolution mode | String | null |
  | waylandDisplayName | **-mode 3 or mode 7 only-** Wayland display name (generaly `wayland-0` or `wayland-1`) | String | wayland-0 |
- | relayGPIOPin | **-mode 8 only-** GPIO pin of the relay | Number | 1 |
+ | relayGPIOPin | **-mode 8 only-** GPIO pin of the relay | Number | 0 |
  | ddcutil | **-mode 5 only-** Adjust feature codes of setvcp command for power on (**powerOnCode**) and off (**powerOffCode**), and to skip check after setvcp commands (**skipSetVcpCheck**) | Object | {powerOnCode: "01", powerOffCode: "04", skipSetVcpCheck: false} 
 
  * Available style:
@@ -192,7 +192,7 @@ Notes: `deviceId` value setting:
  * Disable Motion: `deviceId: 0,` (You don't have any webcam)
  * Enable device auto-detection: `deviceId: 1,`
 
-In 99% of time auto-detection works but in case you have SooOOoo many webcam, open the developer console (`npm start dev`) and try:<br>
+In 99% of time auto-detection works but in case you have SooOOoo many webcam, start MagicMirror² with the developer console (`npm run start:dev` in your MagicMirror folder, or `npm run start:x11:dev` on X11) and try:<br>
 `await navigator.mediaDevices.enumerateDevices()` to get all devices and copy and past the `deviceId` of your needed device
 sample:<br>
 `deviceId: "27d8c2a4b894149a2caae146d8f4bea9cd74c528453a5859ab18c2c764d7d2411",`
@@ -416,7 +416,7 @@ cd ~/MagicMirror/modules/MMM-Pir
 npm run update
 ```
 
-### Automatic Update from [updatenotification](https://develop.docs.magicmirror.builders/modules/updatenotification.html) default module
+### Automatic Update from [updatenotification](https://docs.magicmirror.builders/modules/updatenotification.html) default module
 
 Since MagicMirror² v2.27.x, we are able to Update automaticaly any modules from `updatenotification`.<br>
 Let's add `MMM-Pir` rule
@@ -437,7 +437,7 @@ Let's add `MMM-Pir` rule
   },
 ```
 ## Reinstall
-For reinstall this module or when an update of MagicMirror² is available, you can use this command:
+To reinstall this module from scratch (it deletes `node_modules` and discards local changes), you can use this command:
 ```sh
 cd ~/MagicMirror/modules/MMM-Pir
 npm run rebuild
