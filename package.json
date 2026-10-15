@@ -1,6 +1,6 @@
 {
   "name": "MMM-Pir",
-  "version": "3.0.0",
+  "version": "3.0.0-thomo",
   "description": "Screen manager",
   "keywords": [
     "magic mirror",
@@ -14,7 +14,15 @@
     "url": "https://github.com/thomo/MMM-Pir"
   },
   "license": "MIT",
-  "author": "bugsounet",
+  "author": {
+    "name": "Thomas Mohaupt",
+    "url": "https://github.com/thomo"
+  },
+  "contributors": [
+    {
+      "name": "bugsounet"
+    }
+  ],
   "type": "commonjs",
   "main": "MMM-Pir.js",
   "scripts": {

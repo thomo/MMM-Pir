@@ -18,7 +18,7 @@ It will wake up with a Pir sensor, Touch screen or crontab
 
 ![](./screenshot/screenshot4.png)
 
-## What's new in v3.0.0
+## What's new in v3.0.0-thomo
 
 - Compatible with MagicMirror² v2.38.0 and Node.js 26
 - Runs on Debian 13 / Raspberry Pi OS "trixie" (libgpiod 2.x)
