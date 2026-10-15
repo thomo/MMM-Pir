@@ -151,6 +151,9 @@ To display the module insert it in the config.js file.
    - `mode: 7` - use labwc (For raspbian 12 with labwc compositor)
    - `mode: 8` - use pinctrl for switching a relay
 
+ ⚠ On Raspberry Pi OS with labwc (default since raspbian 12), use `mode: 7` (needs `sudo apt install wlopm`).<br>
+ `mode: 3` disables the output, which may crash MagicMirror² (Electron) every time the screen turns off.
+
 Note:<br>
 It's possible that `pinctrl` tool is not installed by default on your system (raspbian 11)<br>
 You can install it by using this command in your `MMM-Pir` folder: `npm run pinctrl`<br>
