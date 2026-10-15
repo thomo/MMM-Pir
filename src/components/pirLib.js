@@ -121,8 +121,19 @@ class PIR {
   /* experimental */
 
   gpiodDetect () {
+    let libgpiod;
     try {
-      const { Chip, Line } = require("node-libgpiod");
+      // optional dependency: can't be built with libgpiod 2.x (Debian 13 "trixie" and newer)
+      libgpiod = require("node-libgpiod");
+    } catch {
+      const message = "node-libgpiod is not available (libgpiod 2.x?), please use Pir mode: 1 (gpiozero)";
+      console.error(`[MMM-Pir] [LIB] [PIR] [GPIOD] ${message}`);
+      this.running = false;
+      return this.callback("PIR_ERROR", message);
+    }
+
+    try {
+      const { Chip, Line } = libgpiod;
       const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
       numbers.every((number) => {

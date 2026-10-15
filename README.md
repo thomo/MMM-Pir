@@ -155,8 +155,10 @@ For some displays, the `getvcp` commands cause the display to turn-on. In these 
  | gpio | BCM-number of the sensor pin. | Number | 21 |
 
 * Available mode:
-    - `mode: 0` - use node-libgpiod library
+    - `mode: 0` - use node-libgpiod library (libgpiod 1.x only, e.g. Raspberry Pi OS "bookworm")
     - `mode: 1` - use python script with gpiozero library
+
+ ⚠ Debian 13 / Raspberry Pi OS "trixie" ships libgpiod 2.x, which `node-libgpiod` doesn't support. On these systems, use `mode: 1`.
 
  ⚠ You can disable PIR Sensor detection by using `gpio: 0`
 
