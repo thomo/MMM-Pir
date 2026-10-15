@@ -8,8 +8,27 @@
 
 var _logPIR = () => { /* do nothing */ };
 
+/**
+ * Deep merge of plain objects (arrays and other values are overwritten)
+ * MagicMirror² core `configMerge` is no longer a global (core is loaded as ES modules)
+ * @param {object} target object to merge into
+ * @param {...object} sources objects to merge from (later wins)
+ * @returns {object} the merged target
+ */
+const _mergePIR = (target, ...sources) => {
+  const isPlainObject = (value) => value?.constructor === Object;
+  sources.forEach((source) => {
+    Object.entries(source ?? {}).forEach(([key, value]) => {
+      target[key] = isPlainObject(target[key]) && isPlainObject(value)
+        ? _mergePIR({}, target[key], value)
+        : value;
+    });
+  });
+  return target;
+};
+
 Module.register("MMM-Pir", {
-  requiresVersion: "2.28.0",
+  requiresVersion: "2.38.0",
   defaults: {
     debug: false,
     Display: {
@@ -73,7 +92,7 @@ Module.register("MMM-Pir", {
       }
     };
 
-    this.config = configMerge({}, this.defaults, this.config);
+    this.config = _mergePIR({}, this.defaults, this.config);
 
     this.screenDisplay = new screenDisplayer(this.config.Display, Tools);
     this.screenTouch = new screenTouch(this.config.Touch, Tools);
@@ -106,9 +125,9 @@ Module.register("MMM-Pir", {
         break;
       case "SCREEN_POWER":
         if (payload && this.config.Sounds.on !== 0) {
-          this.sound.src = `modules/MMM-Pir/sounds/${this.config.Sounds.on}?seed=${Date.now}`;
+          this.sound.src = `modules/MMM-Pir/sounds/${this.config.Sounds.on}?seed=${Date.now()}`;
         } else if (this.config.Sounds.off !== 0) {
-          this.sound.src = `modules/MMM-Pir/sounds/${this.config.Sounds.off}?seed=${Date.now}`;
+          this.sound.src = `modules/MMM-Pir/sounds/${this.config.Sounds.off}?seed=${Date.now()}`;
         }
         break;
       case "SCREEN_POWERSTATUS":
@@ -204,6 +223,7 @@ Module.register("MMM-Pir", {
 
   getScripts () {
     return [
+      "moment.js", // provided by MagicMirror² vendor files, no longer loaded globally by default
       "/modules/MMM-Pir/components/screenDisplayer.js",
       "/modules/MMM-Pir/components/screenTouch.js",
       "/modules/MMM-Pir/node_modules/long-press-event/dist/long-press-event.min.js",

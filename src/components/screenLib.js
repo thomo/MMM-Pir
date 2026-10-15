@@ -5,7 +5,6 @@
 
 const exec = require("child_process").exec;
 const process = require("process");
-const moment = require("moment");
 const lodash = require("lodash");
 
 var log = () => { /* do nothing */ };
@@ -201,7 +200,7 @@ class SCREEN {
         this.screen.output.dimmer = 1 - ((this.screen.dimmerFrom - this.counter) / this.screen.dimmerFrom);
       }
 
-      this.screen.output.timer = moment(new Date(this.counter)).format("mm:ss");
+      this.screen.output.timer = this.formatTimer(this.counter);
       this.screen.output.bar = (this.counter / this.config.timeout).toFixed(3);
 
       this.sendSocketNotification("SCREEN_OUTPUT", this.screen.output);
@@ -659,6 +658,13 @@ class SCREEN {
 
   SendScreenPowerState () {
     this.sendSocketNotification("SCREEN_POWER", this.screen.power);
+  }
+
+  formatTimer (ms) {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   }
 
   sleep (ms = 1300) {

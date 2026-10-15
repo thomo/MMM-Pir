@@ -1,6 +1,9 @@
 # MMM-Pir
 
-## ⚠ The original user bugsounet deleted his MMM-Pir repository - this is just a copy. I cannot give support.
+> [!WARNING]
+> This repository is based on MMM-Pir by **bugsounet**, whose original repository has been deleted.
+> It has been updated to run on current MagicMirror² and Raspberry Pi OS versions, but **I do not provide any support** for it.
+> Use it as it is.
 
 After a configured time without any user interaction the display will turn off and hide all modules for economy mode.<br>
 It will wake up with a Pir sensor, Touch screen or crontab
@@ -15,11 +18,19 @@ It will wake up with a Pir sensor, Touch screen or crontab
 
 ![](./screenshot/screenshot4.png)
 
+## What's new in v3.0.0-thomo
+
+- Compatible with MagicMirror² v2.38.0 and Node.js 26
+- Runs on Debian 13 / Raspberry Pi OS "trixie" (libgpiod 2.x)
+- Pir `mode: 0` now uses the `gpiomon` tool from libgpiod (works with libgpiod 1.x and 2.x) and reacts instantly to the sensor
+- No native module to compile any more (`node-libgpiod` was removed)
+
+⚠ Breaking: MagicMirror² v2.38.0 and Node.js v22.22.2 or newer are now required.
 
 ## Installation
 
-**Minimal MagicMirror² version requirement: v2.28.0** <br>
-**Minimal node version requirement: v20.9.0**
+**Minimal MagicMirror² version requirement: v2.38.0** <br>
+**Minimal node version requirement: v22.22.2 (v24 or newer recommended, tested with v26)**
 
 Clone the module into your MagicMirror module folder and execute `npm run setup` in the module's directory.
 ```sh
@@ -119,7 +130,7 @@ To display the module insert it in the config.js file.
  | wrandrForceRotation | **-mode 3 only-** Forces screen rotation according to the defined value (possible value: "normal", "90", "180", "270", "flipped", "flipped-90", "flipped-180", "flipped-270") | String | normal |
  | wrandrForceMode | **-mode 3 only-** Force screen resolution mode | String | null |
  | waylandDisplayName | **-mode 3 or mode 7 only-** Wayland display name (generaly `wayland-0` or `wayland-1`) | String | wayland-0 |
- | relayGPIOPin | **-mode 8 only-** GPIO pin of the relay | Number | 1 |
+ | relayGPIOPin | **-mode 8 only-** GPIO pin of the relay | Number | 0 |
  | ddcutil | **-mode 5 only-** Adjust feature codes of setvcp command for power on (**powerOnCode**) and off (**powerOffCode**), and to skip check after setvcp commands (**skipSetVcpCheck**) | Object | {powerOnCode: "01", powerOffCode: "04", skipSetVcpCheck: false} 
 
  * Available style:
@@ -155,10 +166,17 @@ For some displays, the `getvcp` commands cause the display to turn-on. In these 
  | gpio | BCM-number of the sensor pin. | Number | 21 |
 
 * Available mode:
-    - `mode: 0` - use node-libgpiod library
+    - `mode: 0` - use `gpiomon` from the libgpiod tools (apt package `gpiod`, works with libgpiod 1.x and 2.x)
     - `mode: 1` - use python script with gpiozero library
 
  ⚠ You can disable PIR Sensor detection by using `gpio: 0`
+
+Tip for `mode: 0`: you can check your sensor without MagicMirror² (replace `21` with your pin, stop with `Ctrl+C`):
+```sh
+gpiomon --edges=rising --chip gpiochip0 21   # libgpiod 2.x (trixie)
+gpiomon --rising-edge gpiochip0 21           # libgpiod 1.x (bookworm)
+```
+Each detection prints a line. On a Raspberry Pi 5, the chip may be another one: `gpiodetect` lists them (MMM-Pir uses the one labelled `pinctrl-...`).
 
 ------
 #### Motion Configuration
@@ -174,7 +192,7 @@ Notes: `deviceId` value setting:
  * Disable Motion: `deviceId: 0,` (You don't have any webcam)
  * Enable device auto-detection: `deviceId: 1,`
 
-In 99% of time auto-detection works but in case you have SooOOoo many webcam, open the developer console (`npm start dev`) and try:<br>
+In 99% of time auto-detection works but in case you have SooOOoo many webcam, start MagicMirror² with the developer console (`npm run start:dev` in your MagicMirror folder, or `npm run start:x11:dev` on X11) and try:<br>
 `await navigator.mediaDevices.enumerateDevices()` to get all devices and copy and past the `deviceId` of your needed device
 sample:<br>
 `deviceId: "27d8c2a4b894149a2caae146d8f4bea9cd74c528453a5859ab18c2c764d7d2411",`
@@ -377,6 +395,17 @@ You can disable sound by using `0` in your configuration
   * `MMM_PIR-LOCK` notification keep the screen on and lock it (freeze counter and stop pir detection).
   * `MMM_PIR-UNLOCK` notification unlock the screen and restart counter and pir detection.
 
+### Development
+
+Sources live in `src/`. `npm run setup` minifies them into the module root (`MMM-Pir.js`, `node_helper.js`, `components/`).
+
+- `npm run dev`: copy `src/` to the module root without minifying (easier debugging)
+- `npm test`: run ESLint
+- `npm run test:minify`: check that all sources build with esbuild
+
+To try the module without a Raspberry Pi, run MagicMirror² in server mode (`node --run server`) and open `http://localhost:8080` in a browser.
+Use `Display.mode: 0`, `Pir.gpio: 0` and `Governor: { sleeping: 0, working: 0 }` so no hardware or `sudo` is needed.
+
 ## Update
 
 ### Manual update
@@ -387,7 +416,7 @@ cd ~/MagicMirror/modules/MMM-Pir
 npm run update
 ```
 
-### Automatic Update from [updatenotification](https://develop.docs.magicmirror.builders/modules/updatenotification.html) default module
+### Automatic Update from [updatenotification](https://docs.magicmirror.builders/modules/updatenotification.html) default module
 
 Since MagicMirror² v2.27.x, we are able to Update automaticaly any modules from `updatenotification`.<br>
 Let's add `MMM-Pir` rule
@@ -408,7 +437,7 @@ Let's add `MMM-Pir` rule
   },
 ```
 ## Reinstall
-For reinstall this module or when an update of MagicMirror² is available, you can use this command:
+To reinstall this module from scratch (it deletes `node_modules` and discards local changes), you can use this command:
 ```sh
 cd ~/MagicMirror/modules/MMM-Pir
 npm run rebuild

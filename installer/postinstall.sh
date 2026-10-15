@@ -3,13 +3,10 @@
 # | npm postinstall |
 # +-----------------+
 
-rebuild=0
 minify=0
 
-while getopts ":rm" option; do
+while getopts ":m" option; do
   case $option in
-    r) # -r option for magicmirror rebuild
-       rebuild=1;;
     m) # -m option for minify all sources
        minify=1;;
   esac
@@ -257,18 +254,8 @@ fi
 Installer_success "Done"
 echo
 
-if [[ $rebuild == 1 ]]; then
-  Installer_info "Rebuild MagicMirror..."
-  electron-rebuild 1>/dev/null || {
-    Installer_error "Rebuild Failed"
-    exit 255
-  }
-  Installer_success "Done"
-  echo
-fi
-
 # module name
-Installer_module="$(grep -Eo '\"name\"[^,]*' ./package.json | grep -Eo '[^:]*$' | awk  -F'\"' '{print $2}')"
+Installer_module="$(grep -m1 -Eo '\"name\"[^,]*' ./package.json | grep -Eo '[^:]*$' | awk  -F'\"' '{print $2}')"
 
 echo
 
